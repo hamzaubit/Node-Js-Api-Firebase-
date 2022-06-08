@@ -28,6 +28,29 @@ app.get('/Users' , (req , res) => {
   });
 });
 
+app.get('/getUser/:id' , async (req , res) => {
+    const id = req.params.id;
+    const data = await admin.firestore().collection("Users").doc(id).get();
+    if(!data.exists) {
+      res.status(404).send('Student with the given ID not found');
+    }else {
+      res.send(data.data());
+  }
+});
+
+app.put('/updateUser/:id' , async (req , res) => {
+  const id = req.params.id;
+  const data = req.body;
+  await admin.firestore().collection("Users").doc(id).update(data);
+  res.send('Student record updated successfuly'); 
+});
+
+app.delete('/deleteUser/:id' , async (req , res) => {
+  const id = req.params.id;
+  await admin.firestore().collection("Users").doc(id).delete();
+  res.send('Student record updated successfuly'); 
+});
+
 app.post('/addUser' , (req , res) => {
   admin.firestore().collection('Users').add({
         "firstName": req.body.firstName,
@@ -48,25 +71,25 @@ app.post('/addUser' , (req , res) => {
 
 
 // CRON Jobs
-exports.myScheduleFunction = functions.pubsub.schedule('30 10 * 1-12 0') // “At 10:30 on every day-of-month from 1 through 31 in every month from January through December.”
-.onRun(() => {
-  console.log("Schedule Function is Running...!!!");
-});
+// exports.myScheduleFunction = functions.pubsub.schedule('30 10 * 1-12 0') // “At 10:30 on every day-of-month from 1 through 31 in every month from January through December.”
+// .onRun(() => {
+//   console.log("Schedule Function is Running...!!!");
+// });
 
 //Trigger Function
 
-exports.triggerFunction = functions.firestore.document('/{collection}/{id}')
-.onCreate((snap , context) => {
-  console.log(snap.data());
-  const collection = context.params.collection;
-  const id = context.params.id;
+// exports.triggerFunction = functions.firestore.document('/{collection}/{id}')
+// .onCreate((snap , context) => {
+//   console.log(snap.data());
+//   const collection = context.params.collection;
+//   const id = context.params.id;
 
-  const activities = admin.firestore.collection('activities');
+//   const activities = admin.firestore.collection('activities');
 
-  if(collection === 'Users'){
-    return activities.add({text : 'User is Added'});
-  }
-  return null;
-});
+//   if(collection === 'Users'){
+//     return activities.add({text : 'User is Added'});
+//   }
+//   return null;
+// });
 
 exports.app = functions.https.onRequest(app);
